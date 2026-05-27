@@ -63,18 +63,11 @@ with col2:
         use_container_width=True
     ):
 
-        role = login_user(
-            username,
-            password
-        )
-
-        if role:
+        if login_user(username, password):
 
             st.session_state.logged_in = True
 
             st.session_state.username = username
-
-            st.session_state.role = role
 
             st.session_state.last_activity = datetime.now()
 

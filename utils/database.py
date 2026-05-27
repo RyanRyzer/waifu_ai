@@ -26,16 +26,6 @@ CREATE TABLE IF NOT EXISTS history (
 )
 """)
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS community_feed (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT,
-    prediction TEXT,
-    confidence REAL,
-    image_path TEXT
-)
-""")
-
 conn.commit()
 
 
@@ -49,25 +39,6 @@ def save_prediction(
     cursor.execute(
         """
         INSERT INTO history
-        (
-            username,
-            prediction,
-            confidence,
-            image_path
-        )
-        VALUES (?, ?, ?, ?)
-        """,
-        (
-            username,
-            prediction,
-            confidence,
-            image_path
-        )
-    )
-
-    cursor.execute(
-        """
-        INSERT INTO community_feed
         (
             username,
             prediction,
@@ -158,31 +129,3 @@ def get_total_predictions():
     total = cursor.fetchone()[0]
 
     return total
-
-
-def get_latest_predictions(limit=6):
-
-    cursor.execute(
-        """
-        SELECT
-            username,
-            prediction,
-            confidence,
-            image_path
-        FROM community_feed
-        ORDER BY id DESC
-        LIMIT ?
-        """,
-        (limit,)
-    )
-
-    return cursor.fetchall()
-
-
-def reset_history():
-
-    cursor.execute("""
-    DELETE FROM community_feed
-    """)
-
-    conn.commit()
