@@ -1,10 +1,13 @@
-from datetime import datetime, timedelta
+import os
 import streamlit as st
+from PIL import Image
 
 from utils.ui import load_ui, sidebar
 from utils.database import (
     get_total_users,
-    get_total_predictions
+    get_total_predictions,
+    get_latest_predictions,
+    reset_history
 )
 
 st.set_page_config(
@@ -23,15 +26,13 @@ total_users = get_total_users()
 
 total_predictions = get_total_predictions()
 
-st.markdown("""
-<div class='title'>
-Dashboard
-</div>
+latest_predictions = get_latest_predictions()
 
-<div class='subtitle'>
-AI Anime Character Detection System
-</div>
-""", unsafe_allow_html=True)
+st.title("Dashboard")
+
+st.caption(
+    "AI Anime Character Detection System"
+)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -39,33 +40,98 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
 
-    st.markdown(
-        f"""
-        <div class='glass'>
-            <h1>{total_predictions}</h1>
-            <p>Total Prediction</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+
+        st.metric(
+            "🎯 Total Predictions",
+            total_predictions
+        )
 
 with col2:
 
-    st.markdown(
-        f"""
-        <div class='glass'>
-            <h1>{total_users}</h1>
-            <p>Total Users</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container(border=True):
+
+        st.metric(
+            "👥 Total Users",
+            total_users
+        )
 
 with col3:
 
-    st.markdown("""
-    <div class='glass'>
-        <h1>TensorFlow Lite</h1>
-        <p>AI Model</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+
+        st.metric(
+            "🤖 AI Model",
+            "TF Lite"
+        )
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+top1, top2 = st.columns([5, 1])
+
+with top1:
+
+    st.subheader(
+        "🌸 Latest Community Predictions"
+    )
+
+with top2:
+
+    if st.session_state.get("role") == "admin":
+
+        if st.button(
+            "🗑️ Reset Feed",
+            use_container_width=True
+        ):
+
+            reset_history()
+
+            st.success(
+                "Community feed berhasil direset."
+            )
+
+            st.rerun()
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+if latest_predictions:
+
+    cols = st.columns(3)
+
+    for index, row in enumerate(latest_predictions):
+
+        username = row[0]
+        prediction = row[1]
+        confidence = row[2]
+        image_path = row[3]
+
+        with cols[index % 3]:
+
+            with st.container(border=True):
+
+                if image_path and os.path.exists(image_path):
+
+                    image = Image.open(image_path)
+
+                    st.image(
+                        image,
+                        width=240
+                    )
+
+                st.info(
+                    f"👤 User: {username}"
+                )
+
+                st.success(
+                    f"🌸 Prediction: {prediction}"
+                )
+
+                st.warning(
+                    f"Confidence: {confidence:.2f}%"
+                )
+
+else:
+
+    st.info(
+        "Belum ada community prediction."
+    )
