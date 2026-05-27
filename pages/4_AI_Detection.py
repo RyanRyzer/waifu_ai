@@ -17,6 +17,26 @@ st.set_page_config(
 if not st.session_state.get("logged_in"):
     st.switch_page("pages/1_Login.py")
 
+now = datetime.now()
+
+timeout = timedelta(minutes=5)
+
+if "last_activity" in st.session_state:
+
+    if now - st.session_state.last_activity > timeout:
+
+        st.session_state.clear()
+
+        st.warning(
+            "Session expired."
+        )
+
+        st.switch_page("pages/1_Login.py")
+
+    else:
+
+        st.session_state.last_activity = now
+
 load_ui()
 sidebar()
 
@@ -39,50 +59,14 @@ st.markdown("""
     margin-bottom:35px;
 }
 
-.result-card{
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:24px;
-    padding:28px;
-    margin-top:10px;
-}
-
-.result-label{
-    font-size:42px;
-    font-weight:800;
-    color:white;
-    margin-bottom:18px;
-}
-
-.result-confidence{
-    font-size:24px;
-    font-weight:700;
-    color:#4ade80;
-}
-
-.top-title{
-    font-size:28px;
-    font-weight:800;
-    color:white;
-    margin-top:24px;
-    margin-bottom:18px;
-}
-
-.prediction-name{
-    font-size:18px;
-    font-weight:700;
-    color:white;
-    margin-bottom:5px;
-}
-
-.prediction-score{
-    color:#60a5fa;
-    font-weight:700;
-    margin-bottom:10px;
-}
-
 .stProgress > div > div{
     background:linear-gradient(90deg,#2563eb,#60a5fa);
+}
+
+.stButton > button{
+    border-radius:14px;
+    font-weight:700;
+    border:none;
 }
 
 </style>
@@ -107,19 +91,31 @@ if uploaded_file:
 
     image = Image.open(uploaded_file).convert("RGB")
 
+    BASE_DIR = os.path.dirname(
+        os.path.abspath(__file__)
+    )
+
+    UPLOAD_DIR = os.path.join(
+        BASE_DIR,
+        "..",
+        "uploads"
+    )
+
     os.makedirs(
-        "uploads",
+        UPLOAD_DIR,
         exist_ok=True
     )
 
     filename = f"{uuid.uuid4()}.png"
 
     filepath = os.path.join(
-        "uploads",
+        UPLOAD_DIR,
         filename
     )
 
     image.save(filepath)
+
+    filepath = os.path.abspath(filepath)
 
     label, confidence, output = predict_image(image)
 
@@ -136,48 +132,21 @@ if uploaded_file:
 
         st.image(
             image,
-            width=340
+            width=320
         )
 
     with col2:
 
-        st.markdown(
-            """
-            <div class='result-card'>
-            """,
-            unsafe_allow_html=True
+        st.success(
+            f"🌸 Prediction: {label}"
         )
 
-        st.markdown(
-            f"""
-            <div class='result-label'>
-                🌸 {label}
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.info(
+            f"Confidence: {confidence:.2f}%"
         )
 
-        st.markdown(
-            f"""
-            <div class='result-confidence'>
-                Confidence: {confidence:.2f}%
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            """
-            <div class='top-title'>
-                🏆 Top 3 Predictions
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.subheader(
+            "🏆 Top 3 Predictions"
         )
 
         categories = [
@@ -213,22 +182,12 @@ if uploaded_file:
 
         for category, score in top_results:
 
-            st.markdown(
-                f"""
-                <div class='prediction-name'>
-                    {category}
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.write(
+                f"### {category}"
             )
 
-            st.markdown(
-                f"""
-                <div class='prediction-score'>
-                    {score:.2f}%
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.caption(
+                f"{score:.2f}%"
             )
 
             st.progress(

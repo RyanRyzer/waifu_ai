@@ -118,7 +118,7 @@ else:
             )
 
             if st.button(
-                f"🗑️ Delete Prediction #{prediction_id}",
+                f"🗑️ Hapus",
                 key=f"delete_{prediction_id}"
             ):
 
@@ -136,7 +136,7 @@ if "selected_delete_id" in st.session_state:
     def confirm_delete():
 
         st.warning(
-            f"Yakin mau hapus Prediction #{selected_id}?"
+            f"Yakin mau hapus Prediction?"
         )
 
         col1, col2 = st.columns(2)
@@ -144,7 +144,7 @@ if "selected_delete_id" in st.session_state:
         with col1:
 
             if st.button(
-                "✅ Ya, Hapus"
+                "✅ Ya"
             ):
 
                 delete_prediction(selected_id)
